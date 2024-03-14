@@ -8,30 +8,36 @@ import (
 	"strings"
 )
 
+func getDirectoryContent(items []os.FileInfo) ([]os.FileInfo, []os.FileInfo) {
+	var dirs []os.FileInfo
+	var files []os.FileInfo
+
+	for _, file := range items {
+		if file.IsDir() {
+			dirs = append(dirs, file)
+		} else {
+			files = append(files, file)
+		}
+	}
+
+	sort.Slice(dirs, func(i, j int) bool {
+		return dirs[i].Name() < dirs[j].Name()
+	})
+
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Name() < files[j].Name()
+	})
+
+	return dirs, files
+}
+
 func readDirectory(path string, nestingLevel int) {
 	dir, _ := os.Open(path)
 	items, err := dir.Readdir(-1)
 	if err != nil {
 		fmt.Printf("Error reading the directory : %q ", path)
 	} else {
-		var dirs []os.FileInfo
-		var files []os.FileInfo
-
-		for _, file := range items {
-			if file.IsDir() {
-				dirs = append(dirs, file)
-			} else {
-				files = append(files, file)
-			}
-		}
-
-		sort.Slice(dirs, func(i, j int) bool {
-			return dirs[i].Name() < dirs[j].Name()
-		})
-
-		sort.Slice(files, func(i, j int) bool {
-			return files[i].Name() < files[j].Name()
-		})
+		dirs, files := getDirectoryContent(items)
 
 		for i, item := range dirs {
 			var treeSymbol string
